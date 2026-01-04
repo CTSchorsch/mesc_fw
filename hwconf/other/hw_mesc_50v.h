@@ -61,14 +61,14 @@
  * 3  (1):	IN10		CURR1
  * 4  (2):	IN11		CURR2
  * 5  (3):	IN12		CURR3
- * 6  (1):	IN5		ADC_EXT1
- * 7  (2):	IN6		ADC_EXT2
+ * 6  (1):	IN5		ADC_EXT1 / GPIO0
+ * 7  (2):	IN6		ADC_EXT2 / GPIO1
  * 8  (3):	IN3		TEMP_MOS
  * 9  (1):	IN14		TEMP_MOTOR
- * 10 (2):	IN15		PC15 - Stecker Deckel
+ * 10 (2):	IN15		PC15 TEMP FRONT Stecker
  * 11 (3):	IN13		AN_IN
- * 12 (1):	IN8		ADC_TMISC2
- * 13 (2):  	IN9     	ADC_TMISC1
+ * 12 (1):	IN8		ADC_EXT 3 / GPIO2
+ * 13 (2):  	IN9     	ADC_EXT 4 / GPIO3
  * 14 (3):      VRefInt
  */
 
@@ -86,12 +86,11 @@
 #define ADC_IND_VIN_SENS		11
 #define ADC_IND_EXT			6
 #define ADC_IND_EXT2			7
-#define ADC_IND_EXT3			10
 #define ADC_IND_TEMP_MOS		8
 #define ADC_IND_TEMP_MOTOR		9
 #define ADC_IND_VREFINT			14
-#define ADC_IND_TMISC1			13
-#define ADC_IND_TMISC2			12
+#define ADC_IND_EXT3			13
+#define ADC_IND_EXT4			12
 #define ADC_IND_TEMP_LED		10
 
 // ADC macros and settings
@@ -125,9 +124,8 @@
 #define NTC_TEMP_MOTOR(beta)		(1.0 / ((logf(NTC_RES_MOTOR(ADC_Value[ADC_IND_TEMP_MOTOR]) / NTC_VALUE_MOTOR) / beta) + (1.0 / 298.15)) - 273.15)
 
 #define NTC_VALUE_MISC	         	10000.0
-#define NTC_RES_MISC(adc_val)		(NTC_VALUE_MISC / ((4095.0 / (float)adc_val) - 1.0)) // Motor temp sensor on low side
+#define NTC_RES_MISC(adc_val)		(NTC_VALUE_MISC / ((4095.0 / (float)adc_val) - 1.0))
 #define NTC_TEMP_MOS1()			(1.0 / ((logf(NTC_RES_MISC(ADC_Value[ADC_IND_TEMP_LED]) / NTC_VALUE_MISC) / 3380) + (1.0 / 298.15)) - 273.15)
-#define NTC_TEMP_MOS2()			(1.0 / ((logf(NTC_RES_MISC(ADC_Value[ADC_IND_TMISC1]) / NTC_VALUE_MISC) / 3380) + (1.0 / 298.15)) - 273.15)
 
 
 // Voltage on ADC channel
@@ -150,6 +148,10 @@
 #define HW_ADC_EXT_PIN			5
 #define HW_ADC_EXT2_GPIO		GPIOA
 #define HW_ADC_EXT2_PIN			6
+#define HW_ADC_EXT3_GPIO		GPIOB
+#define HW_ADC_EXT3_PIN			0
+#define HW_ADC_EXT4_GPIO		GPIOB
+#define HW_ADC_EXT4_PIN			1
 
 // UART Peripheral
 #define HW_UART_DEV			SD3
