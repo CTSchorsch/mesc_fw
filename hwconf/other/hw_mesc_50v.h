@@ -109,7 +109,7 @@
 #define CURRENT_AMP_GAIN		20.0
 #endif
 #ifndef CURRENT_SHUNT_RES
-#define CURRENT_SHUNT_RES		0.002
+#define CURRENT_SHUNT_RES		0.001
 #endif
 
 // Input voltage
@@ -146,10 +146,10 @@
 // COMM-port ADC GPIOs
 #define HW_ADC_EXT_GPIO			GPIOA
 #define HW_ADC_EXT_PIN			5
-#define HW_ADC_EXT2_GPIO		GPIOA
-#define HW_ADC_EXT2_PIN			6
-#define HW_ADC_EXT3_GPIO		GPIOB
-#define HW_ADC_EXT3_PIN			0
+#define HW_ADC_EXT2_GPIO		GPIOB
+#define HW_ADC_EXT2_PIN			0
+#define HW_ADC_EXT3_GPIO		GPIOA
+#define HW_ADC_EXT3_PIN			6
 #define HW_ADC_EXT4_GPIO		GPIOB
 #define HW_ADC_EXT4_PIN			1
 
