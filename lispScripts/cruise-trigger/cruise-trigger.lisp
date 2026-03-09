@@ -3,7 +3,7 @@
 
 (define *cruise-speed* 0.7) ; initial cruise speed from 0.0 to 1.0
 
-(define +rsc-interval+ 0.04) ; seconds for RSC update
+(define +rsc-update-secs+ 0.04) ; seconds for RSC update
 (define +rsc-step+ 0.008) ; plus or minus actual value by step
 (define *rsc-target* 0.0) ; target value of RSC from 0.0 to 1.0
 (define *rsc-actual* 0.0) ; actual value of RSC from 0.0 to 1.0
@@ -22,7 +22,7 @@
 (define *button-minus* (list 'pin-adc3 nil nil nil 0 0 0)) ; poor man's object
 (define *button-trigger* (list 'pin-adc1 nil nil nil 0 0 0)) ; poor man's object
 
-(define +timer-interval+ 0) ; index time interval in seconds
+(define +timer-call-secs+ 0) ; index seconds to call function
 (define +timer-fun+ 1) ; index function to eval
 (define +timer-last-call+ 2) ; index timestamp last call of function
 (define *timer* (list )) ; poor man's object
@@ -59,7 +59,7 @@
 (defun timer-tick() {
   ;; ticks the timer forward
   (loopfor i 0 (< i (length *timer*)) (+ i 1) {
-    (var a (ix (ix *timer* i) +timer-interval+))
+    (var a (ix (ix *timer* i) +timer-call-secs+))
     (var b (ix (ix *timer* i) +timer-fun+))
     (var c (ix (ix *timer* i) +timer-last-call+))
     (if (< a (secs-since c)) {
@@ -214,7 +214,7 @@
 ;;; timer init
 (timer-every +button-hold-secs+ '(button-minus-on-hold))
 (timer-every +button-hold-secs+ '(button-plus-on-hold))
-(timer-every +rsc-interval+ '(rsc-update))
+(timer-every +rsc-update-secs+ '(rsc-update))
 
 ;;; low voltage
 (if (< (get-vin) 21) {
@@ -231,5 +231,5 @@
 ;;; main loop
 (loopwhile t {
   (main-loop)
-  (sleep +rsc-interval+) ; keep CPU low
+  (sleep +rsc-update-secs+) ; keep CPU low
 })
