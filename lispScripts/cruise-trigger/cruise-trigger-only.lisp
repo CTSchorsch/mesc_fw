@@ -168,51 +168,36 @@
   })
 })
 
-(defun main-loop() {
-  ;; main loop
-  (button-update *button-plus*)
-  (button-update *button-minus*)
-  (timer-tick)
-  (cond
-    ((button-click *button-plus* 2) {
-      (print "button-click *button-plus* twice")
-      (if (eq 1.0 *rsc-target*)
-        (setq *rsc-target* *cruise-speed*)
-        (setq *rsc-target* 1.0)
-      )
-    })
-    ((button-click *button-minus* 2) {
-      (print "button-click *button-minus* twice")
-      (if (eq 1.0 *rsc-target*)
-        (setq *rsc-target* *cruise-speed*)
-        (setq *rsc-target* 1.0)
-      )
-    })
-    ((button-click *button-plus* 1) {
-      (print "button-click *button-plus* once")
-      (if (eq 0.0 *rsc-target*)
-        (setq *rsc-target* *cruise-speed*)
-        {
-          (if (not (eq 1.0 *rsc-target*))
-            (setq *cruise-speed* *rsc-target*)
-          )
-          (setq *rsc-target* 0.0)
-        }
-      )
-    })
-    ((button-click *button-minus* 1) {
-      (print "button-click *button-minus* once")
-      (if (eq 0.0 *rsc-target*)
-        (setq *rsc-target* *cruise-speed*)
-        {
-          (if (not (eq 1.0 *rsc-target*))
-            (setq *cruise-speed* *rsc-target*)
-          )
-          (setq *rsc-target* 0.0)
-        }
-      )
-    })
-  )
+(defun cruise-trigger-on-click() {
+  ;; handler for button-plus or button-minus on click
+  (if (or (button-click *button-plus* 1)(button-click *button-minus* 1)) {
+    (print "cruise-trigger-on-click")
+    (if (eq 0.0 *rsc-target*)
+      (setq *rsc-target* *cruise-speed*) ; resume
+      {
+        (if (not (eq 1.0 *rsc-target*))
+          (setq *cruise-speed* *rsc-target*) ; set
+        )
+        (setq *rsc-target* 0.0) ; stop
+      }
+    )
+  })
+})
+
+(defun cruise-trigger-on-double-click() {
+  ;; handler for button-plus or button-minus on double-click
+  (if (or (button-click *button-plus* 2)(button-click *button-minus* 2)) {
+    (print "cruise-trigger-on-double-click")
+    (if (eq 1.0 *rsc-target*)
+      (setq *rsc-target* *cruise-speed*) ; resume
+      {
+        (if (not (eq 0.0 *rsc-target*))
+          (setq *cruise-speed* *rsc-target*) ; set
+        )
+        (setq *rsc-target* 1.0) ; full-speed
+      }
+    )
+  })
 })
 
 ;;; button init
@@ -238,6 +223,10 @@
 
 ;;; main loop
 (loopwhile t {
-  (main-loop)
+  (button-update *button-plus*)
+  (button-update *button-minus*)
+  (cruise-trigger-on-click)
+  (cruise-trigger-on-double-click)
+  (timer-tick)
   (sleep +rsc-update-secs+) ; keep CPU low
 })

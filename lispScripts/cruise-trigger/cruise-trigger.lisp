@@ -188,7 +188,12 @@
       (print "button-click *button-trigger* twice")
       (if (eq 1.0 *rsc-target*)
         (setq *rsc-target* *cruise-speed*)
-        (setq *rsc-target* 1.0)
+        {
+          (if (not (eq 0.0 *rsc-target*))
+            (setq *cruise-speed* *rsc-target*)
+          )
+          (setq *rsc-target* 1.0)
+        }
       )
     })
     ((button-click *button-trigger* 1) {
