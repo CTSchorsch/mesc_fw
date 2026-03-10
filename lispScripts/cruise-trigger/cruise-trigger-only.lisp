@@ -107,13 +107,6 @@
   )
 })
 
-(defun button-press(x)
-  ;; return T if button X is pressed
-  (if (not (ix x +button-up+))
-    (if (ix x +button-changed+) t nil)
-  )
-)
-
 (defun button-click(x y) {
   ;; return T if button X is clicked Y times
   (if (ix x +button-clicked+)
@@ -173,12 +166,14 @@
   (if (or (button-click *button-plus* 1)(button-click *button-minus* 1)) {
     (print "cruise-trigger-on-click")
     (if (eq 0.0 *rsc-target*)
-      (setq *rsc-target* *cruise-speed*) ; resume
+      ; resume to last stored speed
+      (setq *rsc-target* *cruise-speed*)
+      ; store speed and slow down to a stop
       {
         (if (not (eq 1.0 *rsc-target*))
-          (setq *cruise-speed* *rsc-target*) ; set
+          (setq *cruise-speed* *rsc-target*)
         )
-        (setq *rsc-target* 0.0) ; stop
+        (setq *rsc-target* 0.0)
       }
     )
   })
@@ -189,12 +184,14 @@
   (if (or (button-click *button-plus* 2)(button-click *button-minus* 2)) {
     (print "cruise-trigger-on-double-click")
     (if (eq 1.0 *rsc-target*)
-      (setq *rsc-target* *cruise-speed*) ; resume
+      ; resume to last stored speed
+      (setq *rsc-target* *cruise-speed*)
+      ; store speed and accelerate to full-speed
       {
         (if (not (eq 0.0 *rsc-target*))
-          (setq *cruise-speed* *rsc-target*) ; set
+          (setq *cruise-speed* *rsc-target*)
         )
-        (setq *rsc-target* 1.0) ; full-speed
+        (setq *rsc-target* 1.0)
       }
     )
   })
