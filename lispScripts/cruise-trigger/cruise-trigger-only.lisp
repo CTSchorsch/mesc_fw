@@ -22,7 +22,7 @@
 (define *button-minus* (list 'pin-adc3 nil nil nil 0 0 0)) ; poor man's object
 
 (define +timer-call-secs+ 0) ; index seconds to call function
-(define +timer-fun+ 1) ; index function to eval
+(define +timer-fun+ 1) ; index function to call
 (define +timer-last-call+ 2) ; index timestamp last call of function
 (define *timer* (list )) ; poor man's object
 
@@ -48,24 +48,27 @@
   (if (> a b) b a)
 )
 
-(defun timer-every(interval function) {
-  ;; call FUNCTION every INTERVAL seconds
-  (var x (list interval function 0)) ; create new timer
+(defun timer-start(secs function) {
+  ;; call FUNCTION every SECS seconds
+  (var x (list secs function (systime))) ; create and start new timer
   (setq *timer* (cons x *timer*)) ; prepend new timer to list
-  (setix (ix *timer* 0) +timer-last-call+ (systime)) ; start new timer
 })
 
 (defun timer-tick() {
   ;; ticks the timer forward
   (loopfor i 0 (< i (length *timer*)) (+ i 1) {
-    (var a (ix (ix *timer* i) +timer-call-secs+))
-    (var b (ix (ix *timer* i) +timer-fun+))
-    (var c (ix (ix *timer* i) +timer-last-call+))
+    (var x (ix *timer* i))
+    (var a (ix x +timer-call-secs+))
+    (var b (ix x +timer-fun+))
+    (var c (ix x +timer-last-call+))
     (if (< a (secs-since c)) {
-      (eval b) ; call function
-      (setix (ix *timer* i) +timer-last-call+ (systime)) ; restart timer
+      (if (apply b) ; call function
+        (setix x +timer-last-call+ (systime)) ; restart timer
+        (setix x +timer-fun+ nil) ; mark delete
+      )
     })
   })
+  (setq *timer* (filter (lambda (x) (not (eq (ix x +timer-fun+) nil))) *timer*)) ; cleanup
 })
 
 (defun button-update(x) {
@@ -121,21 +124,23 @@
   )
 )
 
-(defun button-minus-on-hold()
+(defun button-minus-on-hold() {
   ;; handler for button-minus on hold
   (if (button-hold *button-minus*) {
     (print "button-minus-on-hold")
     (setq *rsc-target* (utils-constrain (- *rsc-target* +button-step+) 0.0 1.0))
   })
-)
+  t ; restart timer
+})
 
-(defun button-plus-on-hold()
+(defun button-plus-on-hold() {
   ;; handler for button-plus on hold
   (if (button-hold *button-plus*) {
     (print "button-plus-on-hold")
     (setq *rsc-target* (utils-constrain (+ *rsc-target* +button-step+) 0.0 1.0))
   })
-)
+  t ; restart timer
+})
 
 (defun rsc-update() {
   ;; handler for ramp/soak controller
@@ -159,6 +164,7 @@
     (set-duty (utils-map *rsc-actual* 0.0 1.0 (conf-get 'l-min-duty) (conf-get 'l-max-duty)))
     (print (str-merge "actual: " (str-from-n *rsc-actual* "%.3f") " target: " (str-from-n *rsc-target* "%.2f")))
   })
+  t ; restart timer
 })
 
 (defun cruise-trigger-on-click() {
@@ -197,23 +203,31 @@
   })
 })
 
+(defun low-voltage() {
+  ;; check for low-voltage
+ (if (< (get-vin) 21) {
+    (print "low-voltage")
+    ; channel 0, 1, 2 or 3
+    ; freq 100 Hz and 7500 Hz - 300-600 Hz are often loud/clear
+    ; voltage 0.5 50% voltage amplitude
+    (timer-start 1.0 (lambda () {(foc-play-tone 0 500 1.5) nil}))
+    (timer-start 1.5 (lambda () {(foc-play-tone 0 440 1.5) nil}))
+    (timer-start 2.0 (lambda () {(foc-play-tone 0 380 1.5) nil}))
+    (timer-start 2.5 (lambda () {(foc-play-stop) nil}))
+  })
+  t ; restart timer
+})
+
 ;;; button init
 (gpio-configure (ix *button-plus* +button-pin+) 'pin-mode-in-pu)
 (gpio-configure (ix *button-minus* +button-pin+) 'pin-mode-in-pu)
 
 ;;; timer init
-(timer-every +button-hold-secs+ '(button-minus-on-hold))
-(timer-every +button-hold-secs+ '(button-plus-on-hold))
-(timer-every +rsc-update-secs+ '(rsc-update))
-
-;;; low voltage
-(if (< (get-vin) 21) {
-  ;signal 4 beeps
-  (foc-beep 1000 0.3 10)
-  (foc-beep 1100 0.3 10)
-  (foc-beep 1200 0.3 10)
-  (foc-beep 1300 0.3 10)
-})
+(timer-start +button-hold-secs+ (lambda ()(button-minus-on-hold)))
+(timer-start +button-hold-secs+ (lambda ()(button-plus-on-hold)))
+(timer-start +rsc-update-secs+ (lambda () (rsc-update)))
+(timer-start 20.0 (lambda () (low-voltage)))
+;(timer-start 1.0 (lambda () {(print "Hello") nil}))
 
 ;;; signal init
 (foc-beep 800 0.5 10)
