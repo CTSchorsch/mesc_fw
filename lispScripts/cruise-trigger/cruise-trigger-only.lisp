@@ -49,7 +49,7 @@
 )
 
 (defun timer-schedule(secs function) {
-  ;; call FUNCTION in SECS seconds and reschedules on result TRUE
+  ;; call FUNCTION in SECS seconds and reschedule on result TRUE
   ;; e.g. (timer-schedule 1.0 (lambda () {(print "Hello") nil}))
   ;; prints "Hello" in one second only once
   (var x (list secs function (systime))) ; create new timer
@@ -65,7 +65,7 @@
     (var c (ix x +timer-last-call+))
     (if (< a (secs-since c)) {
       (if (apply b) ; call function
-        (setix x +timer-last-call+ (systime)) ; restart timer
+        (setix x +timer-last-call+ (systime)) ; reschedule timer
         (setix x +timer-fun+ nil) ; mark delete
       )
     })
@@ -132,7 +132,7 @@
     (print "button-minus-on-hold")
     (setq *rsc-target* (utils-constrain (- *rsc-target* +button-step+) 0.0 1.0))
   })
-  t ; restart timer
+  t ; reschedule timer
 })
 
 (defun button-plus-on-hold() {
@@ -141,7 +141,7 @@
     (print "button-plus-on-hold")
     (setq *rsc-target* (utils-constrain (+ *rsc-target* +button-step+) 0.0 1.0))
   })
-  t ; restart timer
+  t ; reschedule timer
 })
 
 (defun rsc-update() {
@@ -166,7 +166,7 @@
     (set-duty (utils-map *rsc-actual* 0.0 1.0 (conf-get 'l-min-duty) (conf-get 'l-max-duty)))
     (print (str-merge "actual: " (str-from-n *rsc-actual* "%.3f") " target: " (str-from-n *rsc-target* "%.2f")))
   })
-  t ; restart timer
+  t ; reschedule timer
 })
 
 (defun cruise-trigger-on-click() {
@@ -206,7 +206,7 @@
 })
 
 (defun notify-on-low-voltage() {
-  ;; handler for low-voltage
+  ;; handler for low-voltage notification
   (if (< (get-vin) 21) {
     (print "low-voltage")
     ; channel 0, 1, 2 or 3
