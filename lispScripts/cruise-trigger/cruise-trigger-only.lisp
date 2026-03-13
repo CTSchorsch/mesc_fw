@@ -207,17 +207,32 @@
   })
 })
 
-(defun notify-on-low-voltage() {
-  ;; handler for low-voltage notification
+(defun notify-on-low-bat() {
+  ;; handler for low-bat notification
   (if (< (get-vin) 21) {
-    (print "low-voltage")
-    ; channel 0, 1, 2 or 3
-    ; freq 100 Hz and 7500 Hz - 300-600 Hz are often loud/clear
-    ; voltage 0.5 50% voltage amplitude
-    (timer-schedule 1.0 (lambda () {(foc-play-tone 0 500 1.5) nil}))
-    (timer-schedule 1.5 (lambda () {(foc-play-tone 0 440 1.5) nil}))
-    (timer-schedule 2.0 (lambda () {(foc-play-tone 0 380 1.5) nil}))
-    (timer-schedule 2.5 (lambda () {(foc-play-stop) nil}))
+    (print "notify-on-low-bat")
+    (var x 1.0)
+    (var dit 0.1)
+    (var dah (* 3 dit))
+    (var gap-inter-element dit)
+    (var gap-short dah)
+    ; B: dah dit dit dit
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dah))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-inter-element))
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dit))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-inter-element))
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dit))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-inter-element))
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dit))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-short))
+    ; A: dit dah
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dit))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-inter-element))
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dah))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-short))
+    ; T: dah
+    (timer-schedule x (lambda () {(foc-play-tone 0 550 2.0) nil})) (setq x (+ x dah))
+    (timer-schedule x (lambda () {(foc-play-stop) nil}))           (setq x (+ x gap-short))
   })
   t ; reschedule
 })
@@ -230,7 +245,7 @@
 (timer-schedule +button-hold-secs+ (lambda () (button-minus-on-hold)))
 (timer-schedule +button-hold-secs+ (lambda () (button-plus-on-hold)))
 (timer-schedule +rsc-update-secs+ (lambda () (rsc-update)))
-(timer-schedule 20.0 (lambda () (notify-on-low-voltage)))
+(timer-schedule 20.0 (lambda () (notify-on-low-bat)))
 
 ;;; signal init
 (foc-beep 800 0.5 10)
