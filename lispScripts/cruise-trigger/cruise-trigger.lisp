@@ -49,24 +49,29 @@
   (if (> a b) b a)
 )
 
-(defun timer-every(interval function) {
-  ;; call FUNCTION every INTERVAL seconds
-  (var x (list interval function 0)) ; create new timer
+(defun timer-schedule(secs function) {
+  ;; call FUNCTION in SECS seconds and reschedules on result TRUE
+  ;; e.g. (timer-schedule 1.0 (lambda () {(print "Hello") nil}))
+  ;; prints "Hello" in one second only once
+  (var x (list secs function (systime))) ; create new timer
   (setq *timer* (cons x *timer*)) ; prepend new timer to list
-  (setix (ix *timer* 0) +timer-last-call+ (systime)) ; start new timer
 })
 
 (defun timer-tick() {
   ;; ticks the timer forward
   (loopfor i 0 (< i (length *timer*)) (+ i 1) {
-    (var a (ix (ix *timer* i) +timer-call-secs+))
-    (var b (ix (ix *timer* i) +timer-fun+))
-    (var c (ix (ix *timer* i) +timer-last-call+))
+    (var x (ix *timer* i))
+    (var a (ix x +timer-call-secs+))
+    (var b (ix x +timer-fun+))
+    (var c (ix x +timer-last-call+))
     (if (< a (secs-since c)) {
-      (eval b) ; call function
-      (setix (ix *timer* i) +timer-last-call+ (systime)) ; restart timer
+      (if (apply b) ; call function
+        (setix x +timer-last-call+ (systime)) ; restart timer
+        (setix x +timer-fun+ nil) ; mark delete
+      )
     })
   })
+  (setq *timer* (filter (lambda (x) (not (eq (ix x +timer-fun+) nil))) *timer*)) ; cleanup
 })
 
 (defun button-update(x) {
@@ -217,9 +222,9 @@
 (gpio-configure (ix *button-trigger* +button-pin+) 'pin-mode-in-pu)
 
 ;;; timer init
-(timer-every +button-hold-secs+ '(button-minus-on-hold))
-(timer-every +button-hold-secs+ '(button-plus-on-hold))
-(timer-every +rsc-update-secs+ '(rsc-update))
+(timer-schedule +button-hold-secs+ (lambda () (button-minus-on-hold)))
+(timer-schedule +button-hold-secs+ (lambda () (button-plus-on-hold)))
+(timer-schedule +rsc-update-secs+ (lambda () (rsc-update)))
 
 ;;; low voltage
 (if (< (get-vin) 21) {

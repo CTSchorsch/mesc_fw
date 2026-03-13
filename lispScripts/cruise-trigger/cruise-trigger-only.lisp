@@ -48,9 +48,11 @@
   (if (> a b) b a)
 )
 
-(defun timer-start(secs function) {
-  ;; call FUNCTION every SECS seconds
-  (var x (list secs function (systime))) ; create and start new timer
+(defun timer-schedule(secs function) {
+  ;; call FUNCTION in SECS seconds and reschedules on result TRUE
+  ;; e.g. (timer-schedule 1.0 (lambda () {(print "Hello") nil}))
+  ;; prints "Hello" in one second only once
+  (var x (list secs function (systime))) ; create new timer
   (setq *timer* (cons x *timer*)) ; prepend new timer to list
 })
 
@@ -203,17 +205,17 @@
   })
 })
 
-(defun low-voltage() {
-  ;; check for low-voltage
- (if (< (get-vin) 21) {
+(defun notify-on-low-voltage() {
+  ;; handler for low-voltage
+  (if (< (get-vin) 21) {
     (print "low-voltage")
     ; channel 0, 1, 2 or 3
     ; freq 100 Hz and 7500 Hz - 300-600 Hz are often loud/clear
     ; voltage 0.5 50% voltage amplitude
-    (timer-start 1.0 (lambda () {(foc-play-tone 0 500 1.5) nil}))
-    (timer-start 1.5 (lambda () {(foc-play-tone 0 440 1.5) nil}))
-    (timer-start 2.0 (lambda () {(foc-play-tone 0 380 1.5) nil}))
-    (timer-start 2.5 (lambda () {(foc-play-stop) nil}))
+    (timer-schedule 1.0 (lambda () {(foc-play-tone 0 500 1.5) nil}))
+    (timer-schedule 1.5 (lambda () {(foc-play-tone 0 440 1.5) nil}))
+    (timer-schedule 2.0 (lambda () {(foc-play-tone 0 380 1.5) nil}))
+    (timer-schedule 2.5 (lambda () {(foc-play-stop) nil}))
   })
   t ; restart timer
 })
@@ -223,11 +225,10 @@
 (gpio-configure (ix *button-minus* +button-pin+) 'pin-mode-in-pu)
 
 ;;; timer init
-(timer-start +button-hold-secs+ (lambda ()(button-minus-on-hold)))
-(timer-start +button-hold-secs+ (lambda ()(button-plus-on-hold)))
-(timer-start +rsc-update-secs+ (lambda () (rsc-update)))
-(timer-start 20.0 (lambda () (low-voltage)))
-;(timer-start 1.0 (lambda () {(print "Hello") nil}))
+(timer-schedule +button-hold-secs+ (lambda () (button-minus-on-hold)))
+(timer-schedule +button-hold-secs+ (lambda () (button-plus-on-hold)))
+(timer-schedule +rsc-update-secs+ (lambda () (rsc-update)))
+(timer-schedule 20.0 (lambda () (notify-on-low-voltage)))
 
 ;;; signal init
 (foc-beep 800 0.5 10)
