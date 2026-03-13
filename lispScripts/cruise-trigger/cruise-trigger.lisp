@@ -68,7 +68,7 @@
     (var c (ix x +timer-last-call+))
     (if (< a (secs-since c)) {
       (if (apply b) ; call function
-        (setix x +timer-last-call+ (systime)) ; reschedule timer
+        (setix x +timer-last-call+ (systime)) ; reschedule
         (setix x +timer-fun+ nil) ; mark delete
       )
     })
@@ -142,7 +142,7 @@
     (print "button-minus-on-hold")
     (setq *rsc-target* (utils-constrain (- *rsc-target* +button-step+) 0.0 1.0))
   })
-  t ; reschedule timer
+  t ; reschedule
 })
 
 (defun button-plus-on-hold() {
@@ -151,7 +151,7 @@
     (print "button-plus-on-hold")
     (setq *rsc-target* (utils-constrain (+ *rsc-target* +button-step+) 0.0 1.0))
   })
-  t ; reschedule timer
+  t ; reschedule
 })
 
 (defun rsc-update() {
@@ -176,7 +176,7 @@
     (set-duty (utils-map *rsc-actual* 0.0 1.0 (conf-get 'l-min-duty) (conf-get 'l-max-duty)))
     (print (str-merge "actual: " (str-from-n *rsc-actual* "%.3f") " target: " (str-from-n *rsc-target* "%.2f")))
   })
-  t ; reschedule timer
+  t ; reschedule
 })
 
 (defun main-loop() {
