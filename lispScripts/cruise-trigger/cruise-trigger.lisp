@@ -1,6 +1,7 @@
 ;;;; https://www.lispbm.com/cheatsheet.pdf
 ;;;; https://github.com/vedderb/bldc/blob/master/lispBM/README.md
 ;;;; VESC Motor Settings -> General -> Current -> Battery Current Max: 35,00 A
+;;;; VESC Motor Settings -> FOC -> General -> Sensor Mode: HFI
 
 (define *cruise-speed* 0.7) ; initial cruise speed from 0.0 to 1.0
 
