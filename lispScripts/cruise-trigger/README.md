@@ -32,25 +32,27 @@ This allows to gain the exact same speed by counting the clicks of the increment
 ## Ramp/Soak Controller (RSC)
 
 The RSC is needed to ramp the duty-cycle of the VESC controller. 
-The buttons only change the `rsc-target` speed, whereas the `rsc-actual` speed is changed by the `rsc-update` function. It either increments or decrements the `rsc-actual` speed by `+rsc-step+`. Therefore, the function is called every `+rsc-update-secs+` seconds.
+The buttons only change the `rsc-target` speed, whereas the `rsc-actual` speed is changed by the `rsc-update` function. It either increments or decrements the `rsc-actual` speed by `rsc-step`. Therefore, the function is called every `rsc-update-secs` seconds.
 
 ## Button
 
 There are several flags and constants defined to detect `button-press`, `button-hold` and `button-click` with an excepted click-count.
 Call `button-update` in the main loop.
 
-Example for a single button-click
+Overview of flags and constants for single-click, double-click and hold
 
 ```clj
-──┐  ┌───── up
-  └──┘ 
-  ├────┤    hold-secs
-  ┌┐ ┌┐
-──┘└─┘└──── changed
-        ┌┐
-────────┘└─ clicked
-     ├──┤   click-secs
-00111111100 click-count
+             single-click   double-click       hold 
+
+up           ──┐  ┌──────   ──┐  ┌──┐  ┌─────   ──┐     ┌──
+               └──┘           └──┘  └──┘          └─────┘ 
+hold-secs      ├────┤         ├────┤├────┤        ├────┤ 
+               ┌┐ ┌┐          ┌┐ ┌┐ ┌┐ ┌┐         ┌┐    ┌┐
+changed      ──┘└─┘└─────   ──┘└─┘└─┘└─┘└────   ──┘└────┘└─
+                     ┌┐                   ┌┐
+clicked      ────────┘└──   ──────────────┘└─   ───────────
+click-secs        ├──┤           ├──┤  ├──┤
+click-count  001111111000   00111111222222200   00111110000
 ```
 
 ## Timer
